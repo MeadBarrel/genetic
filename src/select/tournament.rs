@@ -28,27 +28,27 @@ impl Default for TournamentSelectionBuilder<()> {
 }
 
 impl<R> TournamentSelectionBuilder<R> {
-    fn with_tournament_size(mut self, size: usize) -> Self {
+    pub fn with_tournament_size(mut self, size: usize) -> Self {
         self.tournament_size = size;
         self
     }
 
-    fn with_num_children(mut self, num_children: usize) -> Self {
+    pub fn with_num_children(mut self, num_children: usize) -> Self {
         self.num_children = num_children;
         self
     }
 
-    fn with_num_parents(mut self, num_parents: usize) -> Self {
+    pub fn with_num_parents(mut self, num_parents: usize) -> Self {
         self.num_parents = num_parents;
         self
     }
 
-    fn with_selection_probability(mut self, probability: f64) -> Self {
+    pub fn with_selection_probability(mut self, probability: f64) -> Self {
         self.selection_probability = probability;
         self
     }
 
-    fn with_rng<RNG: Rng>(mut self, rng: RNG) -> TournamentSelectionBuilder<RNG> {
+    pub fn with_rng<RNG: Rng>(mut self, rng: RNG) -> TournamentSelectionBuilder<RNG> {
         TournamentSelectionBuilder { 
             tournament_size: self.tournament_size,
             num_children: self.num_children,
