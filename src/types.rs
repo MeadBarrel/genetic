@@ -20,11 +20,11 @@ pub trait FitnessFunction: Send + Sync {
             T: Iterator<Item = (&'a Self::Phenotype, Option<&'a Self::Fitness>)>;
 }
 
-pub trait Incubator {
+pub trait Incubator<'a> {
     type Genotype: Genotype;
     type Phenotype: Phenotype;
 
-    fn grow(&self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
+    fn grow(&'a self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
 }
 
 pub trait MutateOperator {

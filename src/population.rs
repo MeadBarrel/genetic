@@ -90,10 +90,10 @@ impl<G, F> UnsortedPopulation<G, F>
         }
     }
 
-    pub fn sort<P, I, FF>(mut self, incubator: &I, fitness_function: &FF) -> Result<SortedPopulation<G, F>> 
+    pub fn sort<'a, P, I, FF>(mut self, incubator: &'a I, fitness_function: &FF) -> Result<SortedPopulation<G, F>> 
         where
             P: Phenotype,
-            I: Incubator<Genotype = G, Phenotype = P>,
+            I: Incubator<'a, Genotype = G, Phenotype = P>,
             FF: FitnessFunction<Phenotype = P, Fitness = F>
     {
         let phenotypes = self.individuals
@@ -169,7 +169,7 @@ mod tests {
 
     pub struct UsizeIncubator;
 
-    impl Incubator for UsizeIncubator {
+    impl<'a> Incubator<'a> for UsizeIncubator {
         type Genotype = usize;
         type Phenotype = usize;
 
