@@ -10,6 +10,7 @@ ndarray = { version = "0.15.6", features = ["rayon"] }
 ordered-float = "3.4.0"
 rand = { version = "0.8.5", features = ["small_rng"] }
 rayon = "1.7.0"
+rusqlite = "0.28.0"
 serde = { version = "1.0.158", features = ["derive"] }
 thiserror = "1.0.39"
 timeit = "0.1.2"
