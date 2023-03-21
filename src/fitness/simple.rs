@@ -16,7 +16,7 @@ impl<P, F, FF> SimpleFitnessFunction<P, F, FF>
     where
         FF: Fn(&P) -> Result<F> + Send + Sync,
 {
-    fn new(function: FF) -> SimpleFitnessFunction<P, F, FF> {
+    pub fn new(function: FF) -> SimpleFitnessFunction<P, F, FF> {
         Self {
             function,
             phenotype: PhantomData,
