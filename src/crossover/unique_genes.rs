@@ -41,7 +41,7 @@ impl<R> UniquenessPreservativeCrossoverBuilder<R>
     where R: Rng
 {
     pub fn build<G>(self) -> UniquenessPreservativeCrossover<R, G> 
-        where G: Genotype
+        where G: AsRef<usize> + Clone + Send + Sync
     {
         UniquenessPreservativeCrossover { 
             num_children: self.num_children, 
