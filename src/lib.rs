@@ -1,14 +1,25 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#![feature(drain_filter)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub mod error;
+pub mod types;
+pub mod fitness;
+pub mod crossover;
+pub mod gabuilder;
+pub mod ga;
+pub mod individual;
+pub mod population;
+pub mod reinsert;
+pub mod select;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub mod prelude {
+    pub use super::error::*;
+    pub use super::types::*;
+    pub use super::fitness::*;
+    pub use super::crossover::*;
+    pub use super::gabuilder::*;
+    pub use super::ga::*;
+    pub use super::individual::*;
+    pub use super::population::*;
+    pub use super::reinsert::*;
+    pub use super::select::*;
 }
