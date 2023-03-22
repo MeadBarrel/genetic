@@ -90,7 +90,7 @@ impl<G, F> UnsortedPopulation<G, F>
         }
     }
 
-    pub fn sort<'a, P, I, FF>(mut self, incubator: &I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
+    pub fn sort<'a, P, I, FF>(mut self, incubator: &'a I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
         where
             P: for<'b> Phenotype<'b>,
             I: Incubator<'a, Genotype = G, Phenotype = P>,
@@ -175,7 +175,7 @@ mod tests {
         type Genotype = usize;
         type Phenotype = usize;
 
-        fn grow(&self, genome: &Self::Genotype) -> Result<Self::Phenotype> {
+        fn grow<'b: 'a>(&self, genome: &Self::Genotype) -> Result<Self::Phenotype> {
             Ok(*genome)
         }
     }
