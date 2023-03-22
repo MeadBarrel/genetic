@@ -169,7 +169,7 @@ impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, 
     where
         G: Genotype,
         P: for<'b> Phenotype<'b>,
-        I: Incubator<'a, Genotype = G, Phenotype = P>,
+        I: for<'b> Incubator<'b, Genotype = G, Phenotype = P>,
         F: Fitness,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,
         S: SelectOperator,
@@ -177,7 +177,7 @@ impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, 
         M: MutateOperator<Genotype = G>,
         R: ReinsertOperator
 {
-    pub fn create_population(&'a self, genomes: Vec<G>) -> Result<SortedPopulation<G, F>> {
+    pub fn create_population(&self, genomes: Vec<G>) -> Result<SortedPopulation<G, F>> {
         Population::new()
             .add_children(genomes)
             .sort(&self.incubator, &self.fitness_function)

@@ -90,10 +90,10 @@ impl<G, F> UnsortedPopulation<G, F>
         }
     }
 
-    pub fn sort<'a, P, I, FF>(mut self, incubator: &'a I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
+    pub fn sort<P, I, FF>(mut self, incubator: &I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
         where
-            P: for<'b> Phenotype<'b>,
-            I: Incubator<'a, Genotype = G, Phenotype = P>,
+            P: for<'a> Phenotype<'a>,
+            I: for<'a> Incubator<'a, Genotype = G, Phenotype = P>,
             FF: FitnessFunction<Phenotype = P, Fitness = F>
     {
         let phenotypes = self.individuals
