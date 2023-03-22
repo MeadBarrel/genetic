@@ -33,7 +33,7 @@ impl GeneticAlgorithmBuilder {
     pub fn with_incubator<'a, G, P, I>(self, incubator: I) -> GeneticAlgorithmBuilderIncubator<'a, G, P, I>
         where
             G: Genotype,
-            P: Phenotype,
+            P: Phenotype<'a>,
             I: Incubator<'a, Genotype = G, Phenotype = P>
     {
         GeneticAlgorithmBuilderIncubator {
@@ -48,7 +48,7 @@ impl GeneticAlgorithmBuilder {
 
 impl<'a, G, P, I> GeneticAlgorithmBuilderIncubator<'a, G, P, I> 
     where 
-        P: Phenotype
+        P: Phenotype<'a>
 {
     pub fn with_fitness<F, FF>(self, fitness: FF) -> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, (), (), (), ()> 
         where
@@ -168,7 +168,7 @@ impl<'a, G, P, I, F, FF, S, C, M> GeneticAlgorithmBuilderFitnessFunction<'a, G, 
 impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R> 
     where
         G: Genotype,
-        P: Phenotype,
+        P: Phenotype<'a>,
         I: Incubator<'a, Genotype = G, Phenotype = P>,
         F: Fitness,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,

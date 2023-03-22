@@ -19,13 +19,13 @@ impl<F1, F2, F3> Fitness for (F1, F2, F3)
 {}
 
 
-pub struct MultiObjectiveFitness<P: Phenotype> {
+pub struct MultiObjectiveFitness<P: for <'a> Phenotype<'a>,> {
     phenotype: PhantomData<P>
 }
 
 pub struct MultiObjectiveFitness1<P, F1, F1F> 
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>,
 {
@@ -35,7 +35,7 @@ pub struct MultiObjectiveFitness1<P, F1, F1F>
 
 pub struct MultiObjectiveFitness2<P, F1, F1F, F2, F2F> 
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F2: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>,
@@ -47,7 +47,7 @@ pub struct MultiObjectiveFitness2<P, F1, F1F, F2, F2F>
 
 pub struct MultiObjectiveFitness3<P, F1, F1F, F2, F2F, F3, F3F> 
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F2: Fitness,
         F3: Fitness,
@@ -61,7 +61,7 @@ pub struct MultiObjectiveFitness3<P, F1, F1F, F2, F2F, F3, F3F>
 }
 
 impl<P> MultiObjectiveFitness<P>
-    where P: Phenotype
+    where P: for <'a> Phenotype<'a>,
 {
     pub fn new() -> Self {
         Self {
@@ -80,7 +80,7 @@ impl<P> MultiObjectiveFitness<P>
 
 impl<P, F1, F1F> MultiObjectiveFitness1<P, F1, F1F> 
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>,
 {
@@ -95,7 +95,7 @@ impl<P, F1, F1F> MultiObjectiveFitness1<P, F1, F1F>
 
 impl<P, F1, F1F, F2, F2F> MultiObjectiveFitness2<P, F1, F1F, F2, F2F>
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>,
         F2: Fitness,
@@ -117,7 +117,7 @@ impl<P, F1, F1F, F2, F2F> MultiObjectiveFitness2<P, F1, F1F, F2, F2F>
 
 impl<P, F1, F1F> FitnessFunction for MultiObjectiveFitness1<P, F1, F1F> 
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>
 {
@@ -133,7 +133,7 @@ impl<P, F1, F1F> FitnessFunction for MultiObjectiveFitness1<P, F1, F1F>
 
 impl<P, F1, F1F, F2, F2F> FitnessFunction for MultiObjectiveFitness2<P, F1, F1F, F2, F2F>
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>,
         F2: Fitness,
@@ -176,7 +176,7 @@ impl<P, F1, F1F, F2, F2F> FitnessFunction for MultiObjectiveFitness2<P, F1, F1F,
 
 impl<P, F1, F1F, F2, F2F, F3, F3F> FitnessFunction for MultiObjectiveFitness3<P, F1, F1F, F2, F2F, F3, F3F>
     where
-        P: Phenotype,
+        P: for <'a> Phenotype<'a>,
         F1: Fitness,
         F1F: FitnessFunction<Phenotype = P, Fitness = F1>,
         F2: Fitness,

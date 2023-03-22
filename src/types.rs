@@ -4,7 +4,7 @@ use crate::error::Result;
 use crate::population::*;
 
 pub trait Genotype: Clone + Send + Sync {}
-pub trait Phenotype: Clone + Send + Sync {}
+pub trait Phenotype<'a>: Clone + Send + Sync {}
 pub trait Fitness: Clone + Ord + Send + Sync {}
 
 impl Fitness for NotNan<f64> {}
@@ -16,7 +16,7 @@ impl<Gene> Genotype for VectorEncoded<Gene>
 {}
 
 pub trait FitnessFunction: Send + Sync {
-    type Phenotype: Phenotype;
+    type Phenotype: for<'a> Phenotype<'a>;
     type Fitness: Fitness;
 
     fn evaluate<'a, T>(&'a self, phenotypes_with_fitnesses: T) -> Result<Vec<Self::Fitness>>
@@ -26,7 +26,7 @@ pub trait FitnessFunction: Send + Sync {
 
 pub trait Incubator<'a> {
     type Genotype: Genotype;
-    type Phenotype: Phenotype;
+    type Phenotype: Phenotype<'a>;
 
     fn grow(&'a self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
 }

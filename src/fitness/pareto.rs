@@ -12,13 +12,13 @@ impl Fitness for ParetoFitness {}
 
 pub struct ParetoFitnessFunction<P> 
     where
-        P: Phenotype,
+        for<'a> P: Phenotype<'a>,
 {
     objectives: Vec<Box<dyn Fn(&P)->f64 + Sync + Send>>,
 }
 
 impl<P> ParetoFitnessFunction<P>
-    where P: Phenotype
+    where P: for<'a> Phenotype<'a>
 {
     pub fn new() -> Self { 
         Self { objectives: Vec::default() } 
@@ -31,7 +31,7 @@ impl<P> ParetoFitnessFunction<P>
 }
 
 impl<P> FitnessFunction for ParetoFitnessFunction<P> 
-    where P: Phenotype
+    where P: for<'a> Phenotype<'a>
 {
     type Phenotype = P;
     type Fitness = ParetoFitness;

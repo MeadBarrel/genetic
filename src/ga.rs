@@ -8,7 +8,7 @@ pub struct GeneticAlgorithm
 <
     'a,
     G: Genotype,
-    P: Phenotype,
+    P: Phenotype<'a>,
     F: Fitness,
     I: Incubator<'a, Genotype = G, Phenotype = P>,
     FF: FitnessFunction<Phenotype = P, Fitness = F>,
@@ -32,7 +32,7 @@ pub struct GeneticAlgorithm
 impl<'a, G, P, F, I, FF, S, C, M, R> GeneticAlgorithm<'a, G, P, F, I, FF, S, C, M, R> 
     where
         G: Genotype,
-        P: Phenotype,
+        P: Phenotype<'a>,
         F: Fitness,
         I: Incubator<'a, Genotype = G, Phenotype = P>,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,

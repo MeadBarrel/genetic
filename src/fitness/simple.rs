@@ -28,7 +28,7 @@ impl<P, F, FF> SimpleFitnessFunction<P, F, FF>
 impl<P, F, FF> FitnessFunction for SimpleFitnessFunction<P, F, FF> 
     where
         F: Fitness,
-        P: Phenotype,
+        P: for<'a> Phenotype<'a>,
         FF: Fn(&P) -> Result<F> + Send + Sync,
 {
     type Phenotype = P;
