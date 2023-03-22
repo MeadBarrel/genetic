@@ -90,9 +90,9 @@ impl<G, F> UnsortedPopulation<G, F>
         }
     }
 
-    pub fn sort<'a, P, I, FF>(mut self, incubator: &'a I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
+    pub fn sort<'a, 'b:'a, P, I, FF>(mut self, incubator: &'b I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
         where
-            P: for<'b> Phenotype<'b>,
+            P: Phenotype<'a>,
             I: Incubator<'a, Genotype = G, Phenotype = P>,
             FF: FitnessFunction<Phenotype = P, Fitness = F>
     {
