@@ -5,6 +5,7 @@ use crate::error::Result;
 
 pub struct SimpleFitnessFunction<P, F, FF> 
     where
+        F: Fitness,
         P: for<'a> Phenotype<'a>,
         FF: Fn(&P) -> Result<F> + Send + Sync,
 {
@@ -15,6 +16,7 @@ pub struct SimpleFitnessFunction<P, F, FF>
 
 impl<P, F, FF> SimpleFitnessFunction<P, F, FF>
     where
+        F: Fitness,
         P: for<'a> Phenotype<'a>,
         FF: Fn(&P) -> Result<F> + Send + Sync,
 {
