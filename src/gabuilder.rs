@@ -32,7 +32,7 @@ impl GeneticAlgorithmBuilder {
         where
             G: Genotype,
             P: for<'a> Phenotype<'a>,
-            I: Incubator<Genotype = G, Phenotype = P>
+            I: for<'a> Incubator<'a, Genotype = G, Phenotype = P>
     {
         GeneticAlgorithmBuilderIncubator {
             genotype: PhantomData,
@@ -161,7 +161,7 @@ impl<G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<G, P, I,
     where
         G: Genotype,
         P: for<'b> Phenotype<'b>,
-        I: Incubator<Genotype = G, Phenotype = P>,
+        I: for<'b> Incubator<'b, Genotype = G, Phenotype = P>,
         F: Fitness,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,
         S: SelectOperator,

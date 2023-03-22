@@ -24,9 +24,9 @@ pub trait FitnessFunction: Send + Sync {
             T: Iterator<Item = (&'a Self::Phenotype, Option<&'a Self::Fitness>)>;
 }
 
-pub trait Incubator {
+pub trait Incubator<'a>: 'a {
     type Genotype: Genotype;
-    type Phenotype: for<'a> Phenotype<'a>;
+    type Phenotype: Phenotype<'a>;
 
     fn grow(&self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
 }
