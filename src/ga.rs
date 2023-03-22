@@ -41,7 +41,7 @@ impl<'a, G, P, F, I, FF, S, C, M, R> GeneticAlgorithm<'a, G, P, F, I, FF, S, C, 
         M: MutateOperator<Genotype = G>,
         R: ReinsertOperator
 {
-    pub fn advance(&mut self, population: SortedPopulation<G, F>) -> Result<SortedPopulation<G, F>> {
+    pub fn advance(&'a mut self, population: SortedPopulation<G, F>) -> Result<SortedPopulation<G, F>> {
         let parents = self.select.select(&population)?;
 
         let mut offsprings = parents
