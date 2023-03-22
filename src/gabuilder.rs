@@ -168,7 +168,7 @@ impl<'a, G, P, I, F, FF, S, C, M> GeneticAlgorithmBuilderFitnessFunction<'a, G, 
 impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R> 
     where
         G: Genotype,
-        P: Phenotype<'a>,
+        P: for<'b> Phenotype<'b>,
         I: Incubator<'a, Genotype = G, Phenotype = P>,
         F: Fitness,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,
