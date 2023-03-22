@@ -33,17 +33,16 @@ impl<P> ParetoFitnessFunction<P>
 impl<P> FitnessFunction for ParetoFitnessFunction<P> 
     where P: for<'a> Phenotype<'a>
 {
-    type Phenotype = P;
+    type Phenotype<'a> = P;
     type Fitness = ParetoFitness;
 
-    fn evaluate<'a, T>(&'a self, phenotypes_with_fitnesses: T) -> crate::error::Result<Vec<Self::Fitness>>
-            where
-                T: Iterator<Item = (&'a Self::Phenotype, Option<&'a Self::Fitness>)> {
+    fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype<'_>, Option<&Self::Fitness>)]) -> crate::prelude::Result<Vec<Self::Fitness>> {
         let objectives: Vec<Vec<f64>> = phenotypes_with_fitnesses
+                    .into_iter()
                     .map(|(phenotype, fitness)| {
                         let objectives = fitness.map(|x| x.objectives.clone());
                         objectives.unwrap_or_else(
-                            || self.objectives.iter().map(|f| f(phenotype)).collect()
+                            || self.objectives.iter().map(|f| f(*phenotype)).collect()
                         )
                     })
                     .collect();
@@ -59,8 +58,34 @@ impl<P> FitnessFunction for ParetoFitnessFunction<P>
                 rank, crowding_distance, objectives
             })
             .collect();
-        Ok(result)
+        Ok(result)        
     }
+
+    // fn evaluate<'a, T>(&'a self, phenotypes_with_fitnesses: T) -> crate::error::Result<Vec<Self::Fitness>>
+    //         where
+    //             T: Iterator<Item = (&'a Self::Phenotype<'a>, Option<&'a Self::Fitness>)> {
+    //     let objectives: Vec<Vec<f64>> = phenotypes_with_fitnesses
+    //                 .map(|(phenotype, fitness)| {
+    //                     let objectives = fitness.map(|x| x.objectives.clone());
+    //                     objectives.unwrap_or_else(
+    //                         || self.objectives.iter().map(|f| f(phenotype)).collect()
+    //                     )
+    //                 })
+    //                 .collect();
+
+    //     let ranks = pareto_ranks(&objectives);
+    //     let crowding_dists = crowding_distances(&objectives);
+    //     let result = ranks.
+    //         into_iter()
+    //         .zip(
+    //             crowding_dists.into_iter().zip(objectives.into_iter())                
+    //         )
+    //         .map(|(rank, (crowding_distance, objectives))| ParetoFitness {
+    //             rank, crowding_distance, objectives
+    //         })
+    //         .collect();
+    //     Ok(result)
+    // }
 }
 
 impl PartialEq for ParetoFitness {

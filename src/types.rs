@@ -16,19 +16,17 @@ impl<Gene> Genotype for VectorEncoded<Gene>
 {}
 
 pub trait FitnessFunction: Send + Sync {
-    type Phenotype: for<'a> Phenotype<'a>;
+    type Phenotype<'a>: Phenotype<'a>;
     type Fitness: Fitness;
 
-    fn evaluate<'a, T>(&'a self, phenotypes_with_fitnesses: T) -> Result<Vec<Self::Fitness>>
-        where
-            T: Iterator<Item = (&'a Self::Phenotype, Option<&'a Self::Fitness>)>;
+    fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype<'_>, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>>;
 }
 
-pub trait Incubator<'a>: 'a {
+pub trait Incubator {
     type Genotype: Genotype;
-    type Phenotype: Phenotype<'a>;
+    type Phenotype<'a>: Phenotype<'a> where Self: 'a;
 
-    fn grow<'b: 'a>(&'b self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
+    fn grow<'b>(&'b self, genome: &Self::Genotype) -> Result<Self::Phenotype<'b>>;
 }
 
 pub trait MutateOperator {
