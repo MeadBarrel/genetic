@@ -28,7 +28,7 @@ pub trait Incubator<'a>: 'a {
     type Genotype: Genotype;
     type Phenotype: Phenotype<'a>;
 
-    fn grow(&'a self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
+    fn grow<'b>(&'b self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
 }
 
 pub trait MutateOperator {

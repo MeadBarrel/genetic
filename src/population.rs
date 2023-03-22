@@ -90,9 +90,9 @@ impl<G, F> UnsortedPopulation<G, F>
         }
     }
 
-    pub fn sort<'a, P, I, FF>(mut self, incubator: &'a I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
+    pub fn sort<'a, P, I, FF>(mut self, incubator: &I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
         where
-            P: Phenotype<'a>,
+            P: for<'b> Phenotype<'b>,
             I: Incubator<'a, Genotype = G, Phenotype = P>,
             FF: FitnessFunction<Phenotype = P, Fitness = F>
     {
@@ -101,31 +101,33 @@ impl<G, F> UnsortedPopulation<G, F>
             .map(|individual| incubator.grow(&individual.genome))
             .collect::<Result<Vec<_>>>()?;
 
-        let phenotypes_with_fitnesses = phenotypes
-            .iter()
-            .zip(self.fitnesses());
+        todo!()
 
-        let new_fitnesses = fitness_function.evaluate(phenotypes_with_fitnesses)?;
+        // let phenotypes_with_fitnesses = phenotypes
+        //     .iter()
+        //     .zip(self.fitnesses());
 
-        self.individuals
-            .iter_mut()
-            .zip(new_fitnesses.into_iter())
-            .for_each(|(mut individual, fitness)| individual.fitness = Some(fitness));
+        // let new_fitnesses = fitness_function.evaluate(phenotypes_with_fitnesses)?;
 
-        self.individuals.par_sort_by(|individual1, individual2| {
-            let a = individual1.fitness.as_ref().unwrap();
-            let b = individual2.fitness.as_ref().unwrap();
-            b.cmp(a)
-        });
+        // self.individuals
+        //     .iter_mut()
+        //     .zip(new_fitnesses.into_iter())
+        //     .for_each(|(mut individual, fitness)| individual.fitness = Some(fitness));
+
+        // self.individuals.par_sort_by(|individual1, individual2| {
+        //     let a = individual1.fitness.as_ref().unwrap();
+        //     let b = individual2.fitness.as_ref().unwrap();
+        //     b.cmp(a)
+        // });
    
-        let result = SortedPopulation {
-            individuals: self.individuals,
-            generation: self.generation,
-            num_children: self.num_children,
-            sorted: PhantomData
-        };
+        // let result = SortedPopulation {
+        //     individuals: self.individuals,
+        //     generation: self.generation,
+        //     num_children: self.num_children,
+        //     sorted: PhantomData
+        // };
 
-        Ok(result)
+        // Ok(result)
     }
 }
 
