@@ -6,10 +6,11 @@ use std::marker::PhantomData;
 
 pub struct GeneticAlgorithm
 <
+    'a,
     G: Genotype,
-    P: for<'a> Phenotype<'a>,
+    P: for<'b> Phenotype<'b>,
     F: Fitness,
-    I: for<'a> Incubator<'a, Genotype = G, Phenotype = P>,
+    I: Incubator<'a, Genotype = G, Phenotype = P>,
     FF: FitnessFunction<Phenotype = P, Fitness = F>,
     S: SelectOperator,
     C: CrossoverOperator<Genotype = G>,
@@ -25,14 +26,15 @@ pub struct GeneticAlgorithm
     pub(crate) crossover: C,
     pub(crate) mutate: M,
     pub(crate) reinsert: R,
+    pub(crate) _phantom: PhantomData<&'a ()>
 }
 
-impl<G, P, F, I, FF, S, C, M, R> GeneticAlgorithm<G, P, F, I, FF, S, C, M, R> 
+impl<'a, G, P, F, I, FF, S, C, M, R> GeneticAlgorithm<'a, G, P, F, I, FF, S, C, M, R> 
     where
         G: Genotype,
-        P: for<'a> Phenotype<'a>,
+        P: for<'b> Phenotype<'b>,
         F: Fitness,
-        I: for<'a> Incubator<'a, Genotype = G, Phenotype = P>,
+        I: Incubator<'a, Genotype = G, Phenotype = P>,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,
         S: SelectOperator,
         C: CrossoverOperator<Genotype = G>,
