@@ -8,14 +8,13 @@ use crate::error::*;
 
 pub struct GeneticAlgorithmBuilder;
 
-pub struct GeneticAlgorithmBuilderIncubator<'a, G, P, I> {
+pub struct GeneticAlgorithmBuilderIncubator<G, P, I> {
     genotype: PhantomData<G>,
     phenotype: PhantomData<P>,
     incubator: I,
-    lifetime: PhantomData<&'a ()>
 }
 
-pub struct GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R> {
+pub struct GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, R> {
     genotype: PhantomData<G>,
     phenotype: PhantomData<P>,
     fitness: PhantomData<F>,
@@ -25,32 +24,30 @@ pub struct GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R
     crossover: C,
     mutate: M,
     reinsert: R,
-    lifetime: PhantomData<&'a ()>
 }
 
 impl GeneticAlgorithmBuilder {
     pub fn new() -> Self { Self }
-    pub fn with_incubator<'a, G, P, I>(self, incubator: I) -> GeneticAlgorithmBuilderIncubator<'a, G, P, I>
+    pub fn with_incubator<G, P, I>(self, incubator: I) -> GeneticAlgorithmBuilderIncubator<G, P, I>
         where
             G: Genotype,
-            P: Phenotype<'a>,
-            I: Incubator<'a, Genotype = G, Phenotype = P>
+            P: for<'a> Phenotype<'a>,
+            I: Incubator<Genotype = G, Phenotype = P>
     {
         GeneticAlgorithmBuilderIncubator {
             genotype: PhantomData,
             phenotype: PhantomData,
             incubator,
-            lifetime: PhantomData,
         }
     }
 
 }
 
-impl<'a, G, P, I> GeneticAlgorithmBuilderIncubator<'a, G, P, I> 
+impl<G, P, I> GeneticAlgorithmBuilderIncubator<G, P, I> 
     where 
-        P: Phenotype<'a>
+        P: for<'a> Phenotype<'a>
 {
-    pub fn with_fitness<F, FF>(self, fitness: FF) -> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, (), (), (), ()> 
+    pub fn with_fitness<F, FF>(self, fitness: FF) -> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, (), (), (), ()> 
         where
             F: Fitness,
             FF: FitnessFunction<Fitness = F, Phenotype = P>
@@ -65,17 +62,16 @@ impl<'a, G, P, I> GeneticAlgorithmBuilderIncubator<'a, G, P, I>
             crossover: (),
             mutate: (),
             reinsert: (),
-            lifetime: PhantomData,
         }
     }
 }
 
-impl<'a, G, P, I, F, FF, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, (), C, M, R> 
+impl<G, P, I, F, FF, C, M, R> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, (), C, M, R> 
     where
         G: Genotype,
         F: Fitness,
 {
-    pub fn with_select<S>(self, select: S) -> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R>
+    pub fn with_select<S>(self, select: S) -> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, R>
         where
             S: SelectOperator
     {
@@ -89,17 +85,16 @@ impl<'a, G, P, I, F, FF, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, 
             crossover: self.crossover,
             mutate: self.mutate,
             reinsert: self.reinsert,
-            lifetime: PhantomData,
         }
     }
 
 }
 
-impl<'a, G, P, I, F, FF, S, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, (), M, R> 
+impl<G, P, I, F, FF, S, M, R> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, (), M, R> 
     where
         G: Genotype
 {
-    pub fn with_crossver<C>(self, crossover: C) -> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R> 
+    pub fn with_crossver<C>(self, crossover: C) -> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, R> 
         where
             C: CrossoverOperator<Genotype = G>
     {
@@ -113,16 +108,15 @@ impl<'a, G, P, I, F, FF, S, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, 
             crossover,
             mutate: self.mutate,
             reinsert: self.reinsert,
-            lifetime: PhantomData,
         }
     }
 }
 
-impl<'a, G, P, I, F, FF, S, C, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, (), R> 
+impl<G, P, I, F, FF, S, C, R> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, (), R> 
     where
         G: Genotype,
 {
-    pub fn with_mutate<M>(self, mutate: M) -> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R> 
+    pub fn with_mutate<M>(self, mutate: M) -> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, R> 
         where
             M: MutateOperator<Genotype=G>
     {
@@ -136,17 +130,16 @@ impl<'a, G, P, I, F, FF, S, C, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, 
             crossover: self.crossover,
             mutate,
             reinsert: self.reinsert,
-            lifetime: PhantomData,
         }
     }
 }
 
-impl<'a, G, P, I, F, FF, S, C, M> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, ()> 
+impl<G, P, I, F, FF, S, C, M> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, ()> 
     where
         G: Genotype,
         F: Fitness,
 {
-    pub fn with_reinsert<R>(self, reinsert: R) -> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R>
+    pub fn with_reinsert<R>(self, reinsert: R) -> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, R>
         where
             R: ReinsertOperator
     {
@@ -160,16 +153,15 @@ impl<'a, G, P, I, F, FF, S, C, M> GeneticAlgorithmBuilderFitnessFunction<'a, G, 
             crossover: self.crossover,
             mutate: self.mutate,
             reinsert,
-            lifetime: PhantomData,
         }
     }
 }
 
-impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, G, P, I, F, FF, S, C, M, R> 
+impl<G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<G, P, I, F, FF, S, C, M, R> 
     where
         G: Genotype,
         P: for<'b> Phenotype<'b>,
-        I: for<'b> Incubator<'b, Genotype = G, Phenotype = P>,
+        I: Incubator<Genotype = G, Phenotype = P>,
         F: Fitness,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,
         S: SelectOperator,
@@ -183,7 +175,7 @@ impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, 
             .sort(&self.incubator, &self.fitness_function)
     }
 
-    pub fn build(self) -> GeneticAlgorithm<'a, G, P, F, I, FF, S, C, M, R> {
+    pub fn build(self) -> GeneticAlgorithm<G, P, F, I, FF, S, C, M, R> {
         GeneticAlgorithm { 
             genotype: PhantomData,
             phenotype: PhantomData,
@@ -194,7 +186,6 @@ impl<'a, G, P, I, F, FF, S, C, M, R> GeneticAlgorithmBuilderFitnessFunction<'a, 
             crossover: self.crossover,
             mutate: self.mutate,
             reinsert: self.reinsert,
-            lifetime: PhantomData,
         }
     }
 }

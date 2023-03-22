@@ -6,11 +6,10 @@ use std::marker::PhantomData;
 
 pub struct GeneticAlgorithm
 <
-    'a,
     G: Genotype,
-    P: Phenotype<'a>,
+    P: for<'a> Phenotype<'a>,
     F: Fitness,
-    I: Incubator<'a, Genotype = G, Phenotype = P>,
+    I: Incubator<Genotype = G, Phenotype = P>,
     FF: FitnessFunction<Phenotype = P, Fitness = F>,
     S: SelectOperator,
     C: CrossoverOperator<Genotype = G>,
@@ -26,22 +25,21 @@ pub struct GeneticAlgorithm
     pub(crate) crossover: C,
     pub(crate) mutate: M,
     pub(crate) reinsert: R,
-    pub(crate) lifetime: PhantomData<&'a ()>
 }
 
-impl<'a, G, P, F, I, FF, S, C, M, R> GeneticAlgorithm<'a, G, P, F, I, FF, S, C, M, R> 
+impl<G, P, F, I, FF, S, C, M, R> GeneticAlgorithm<G, P, F, I, FF, S, C, M, R> 
     where
         G: Genotype,
-        P: for<'b> Phenotype<'b>,
+        P: for<'a> Phenotype<'a>,
         F: Fitness,
-        I: for<'b> Incubator<'b, Genotype = G, Phenotype = P>,
+        I: Incubator<Genotype = G, Phenotype = P>,
         FF: FitnessFunction<Phenotype = P, Fitness = F>,
         S: SelectOperator,
         C: CrossoverOperator<Genotype = G>,
         M: MutateOperator<Genotype = G>,
         R: ReinsertOperator
 {
-    pub fn advance(&'a mut self, population: SortedPopulation<G, F>) -> Result<SortedPopulation<G, F>> {
+    pub fn advance(&mut self, population: SortedPopulation<G, F>) -> Result<SortedPopulation<G, F>> {
         let parents = self.select.select(&population)?;
 
         let mut offsprings = parents
