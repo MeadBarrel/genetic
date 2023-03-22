@@ -233,3 +233,30 @@ impl<P, F1, F1F, F2, F2F, F3, F3F> FitnessFunction for MultiObjectiveFitness3<P,
         Ok(result)
     }
 }
+
+
+mod temp {
+    use super::*;
+    use crate::types::*;
+    use super::super::SimpleFitnessFunction;
+
+    #[derive(Clone)]
+    struct MyPhenotype<'a>(&'a str);
+
+    impl<'a, 's> Phenotype<'a> for MyPhenotype<'s> {}
+
+    impl Fitness for usize {}
+
+    fn a() {
+        // let fitness = MultiObjectiveFitness::new()
+        //     .with_fitness(func)
+        let fitness = MultiObjectiveFitness::new()
+            .with_fitness(
+                SimpleFitnessFunction::new(|x: &MyPhenotype| Ok(x.0.len()))
+            )
+            .with_fitness(
+                SimpleFitnessFunction::new(|x: &MyPhenotype| Ok(x.0.len()))
+            );
+
+    }
+}
