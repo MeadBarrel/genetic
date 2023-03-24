@@ -39,7 +39,7 @@ impl<I> GeneticAlgorithmBuilder<I, (), (), (), (), ()>
     where 
         I: Incubator
 {
-    fn with_fitness_function<F>(self, fitness_function: F) -> GeneticAlgorithmBuilder<I, F, (), (), (), ()> {
+    pub fn with_fitness_function<F>(self, fitness_function: F) -> GeneticAlgorithmBuilder<I, F, (), (), (), ()> {
         GeneticAlgorithmBuilder {
             incubator: self.incubator,
             fitness_function,
