@@ -114,14 +114,14 @@ impl<'a, P, I, F, S, C, M, R> GeneticAlgorithmBuilder<I, F, S, C, M, R>
         M: MutateOperator<Genotype = I::Genotype>,
         R: ReinsertOperator
 {
-    fn create_population(&'a self, genomes: Vec<I::Genotype>) -> Result<SortedPopulation<I::Genotype, F::Fitness>> 
+    pub fn create_population(&'a self, genomes: Vec<I::Genotype>) -> Result<SortedPopulation<I::Genotype, F::Fitness>> 
     {
         Population::new()
             .add_children(genomes)
             .sort(&self.incubator, &self.fitness_function)
     }
 
-    fn build(self) -> GeneticAlgorithm<P, I, F, S, C, M, R> {
+    pub fn build(self) -> GeneticAlgorithm<P, I, F, S, C, M, R> {
         GeneticAlgorithm {
             incubator: self.incubator,
             fitness_function: self.fitness_function,
