@@ -1,8 +1,10 @@
+use std::marker::PhantomData;
+
 use crate::types::*;
 use crate::population::*;
 use crate::error::*;
 
-pub struct GeneticAlgorithm<I, F, S, C, M, R>
+pub struct GeneticAlgorithm<P, I, F, S, C, M, R>
 {
     pub incubator: I,
     pub fitness_function: F,
@@ -10,12 +12,14 @@ pub struct GeneticAlgorithm<I, F, S, C, M, R>
     pub crossover: C,
     pub mutate: M,
     pub reinsert: R,    
+    pub _phantom: PhantomData<P>
 }
 
-impl<'a, I, F, S, C, M, R> GeneticAlgorithm<I, F, S, C, M, R>
+impl<'a, P, I, F, S, C, M, R> GeneticAlgorithm<P, I, F, S, C, M, R>
     where 
-        I: Incubator + 'a,
-        F: FitnessFunction<Phenotype<'a> = I::Phenotype<'a>>,
+        I: Incubator<Phenotype<'a> = P> + 'a,
+        P: Phenotype,
+        F: FitnessFunction<Phenotype = P>,
         S: SelectOperator,
         C: CrossoverOperator<Genotype = I::Genotype>,
         M: MutateOperator<Genotype = I::Genotype>,

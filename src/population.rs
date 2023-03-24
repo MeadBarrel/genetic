@@ -91,10 +91,11 @@ impl<G, F> UnsortedPopulation<G, F>
         }
     }
 
-    pub fn sort<'a, I, FF>(mut self, incubator: &'a I, fitness_function: &'a FF) -> Result<SortedPopulation<G, F>>
+    pub fn sort<'a, P, I, FF>(mut self, incubator: &'a I, fitness_function: &FF) -> Result<SortedPopulation<G, F>>
         where
-            I: Incubator<Genotype = G>,
-            FF: FitnessFunction<Phenotype<'a> = I::Phenotype<'a>, Fitness = F>
+            I: Incubator<Genotype = G, Phenotype<'a> = P>,
+            P: Phenotype,
+            FF: FitnessFunction<Fitness = F, Phenotype = P>
     {
         let phenotypes = self.individuals
             .iter()
@@ -150,18 +151,18 @@ mod tests {
 
     impl Genotype for usize {}
     //impl Fitness for usize {}
-    impl<'a> Phenotype<'a> for usize {}
+    impl<'a> Phenotype for &'a str {}
 
-    pub struct UsizeFitnessFunction;
+    pub struct UsizeFitnessFunction<'a>(PhantomData<&'a ()>);
 
-    impl FitnessFunction for UsizeFitnessFunction {
-        type Phenotype<'a> = usize;
+    impl<'a> FitnessFunction for UsizeFitnessFunction<'a> {
+        type Phenotype = &'a str;
         type Fitness = usize;
 
-        fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype<'_>, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
+        fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
             let result = phenotypes_with_fitnesses
                         .into_iter()
-                        .map(|(phenotype, fitness)| fitness.cloned().unwrap_or_else(|| **phenotype*2))
+                        .map(|(phenotype, fitness)| fitness.cloned().unwrap_or_else(|| phenotype.len()))
                         .collect();
             Ok(result)            
         }
@@ -176,32 +177,32 @@ mod tests {
         // }
     }
 
-    pub struct UsizeIncubator;
+    #[derive(Clone)]
+    pub struct UsizeIncubator(Vec<String>);
 
     impl Incubator for UsizeIncubator {
         type Genotype = usize;
-        type Phenotype<'b> = usize;
+        type Phenotype<'a> = &'a str;
 
-        fn grow<'b>(&'b self, genome: &Self::Genotype) -> Result<Self::Phenotype<'b>> {
-            Ok(*genome)
+        fn grow<'a: 'b, 'b>(&'a self, genome: &Self::Genotype) -> Result<Self::Phenotype<'b>> {
+            Ok(&self.0[*genome])
         }
     }
 
     #[test]
     fn test_population_sort() {
-        let fitness_function = UsizeFitnessFunction;
-        let incubator = UsizeIncubator;
+        let fitness_function = UsizeFitnessFunction(PhantomData);
+        let incubator = UsizeIncubator(vec![
+            "apples".into(),
+            "oranges".into(),
+            "wheat".into(),
+            "coconuts".into(),
+            "stuff".into(),
+            "grapes".into()
+        ]);
 
         let genomes = vec![
-            1231,
-            918,
-            71,
-            991,
-            15,
-            71,
-            22,
-            9,
-            912
+            5, 3, 2, 4, 1
         ];
 
         let population = UnsortedPopulation::new();

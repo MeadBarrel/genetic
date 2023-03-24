@@ -1,23 +1,146 @@
 use crate::types::*;
-use crate::error::Result;
+use crate::error::*;
 
-pub struct SimpleFitnessFunction<F>(F);
-
-impl<F> FitnessFunction for SimpleFitnessFunction<F>
-    where
-        F: for<'a> Fn(&Self::Phenotype<'a>) -> Result<Self::Fitness>
+#[derive(Clone)]
+pub struct SimpleFitnessFunction<F, P, Fit, B>
+where
+    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    P: Phenotype,
+    Fit: Fitness,
+    B: FitnessBehavior,
 {
-    fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype<'_>, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
-        let result = phenotypes_with_fitnesses
-            .into_iter()
-            .map(|(phenotype, previous_fitness)| {
-                match previous_fitness {
-                    Some(ex) => {let a = Ok((*ex).clone()); a},
-                    None => (self.function)(phenotype)
-                }
-            })
-            .collect::<Result<Vec<F>>>();
-        result
-                
+    fitness_function: F,
+    _marker: std::marker::PhantomData<(P, Fit, B)>,
+}
+
+impl<F, P, Fit, B> SimpleFitnessFunction<F, P, Fit, B>
+where
+    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    P: Phenotype,
+    Fit: Fitness,
+    B: FitnessBehavior,
+{
+    pub fn new(fitness_function: F) -> Self {
+        Self {
+            fitness_function,
+            _marker: std::marker::PhantomData,
+        }
     }
 }
+
+pub struct SimpleFitness<F, P, Fit> {
+    fitness_function: F,
+    _marker: std::marker::PhantomData<(P, Fit)>,
+}
+
+impl<F, P, Fit> SimpleFitness<F, P, Fit>
+where
+    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    P: Phenotype,
+    Fit: Fitness,
+{
+    pub fn new(fitness_function: F) -> Self {
+        Self {
+            fitness_function,
+            _marker: std::marker::PhantomData,
+        }
+    }
+
+    pub fn use_existing_fitness(self) -> SimpleFitnessFunction<F, P, Fit, UseExistingFitness> {
+        SimpleFitnessFunction::new(self.fitness_function)
+    }
+
+    pub fn recalculate_fitness(self) -> SimpleFitnessFunction<F, P, Fit, RecalculateFitness> {
+        SimpleFitnessFunction::new(self.fitness_function)
+    }
+}
+
+pub trait FitnessBehavior {
+    fn handle_existing_fitness<'a, Fit: Fitness>(
+        existing_fitness: &'a Option<&'a Fit>,
+        fitness_function: impl FnOnce() -> Result<Fit>,
+    ) -> Result<Fit>;
+}
+
+pub struct UseExistingFitness;
+pub struct RecalculateFitness;
+
+impl FitnessBehavior for UseExistingFitness {
+    fn handle_existing_fitness<'a, Fit: Fitness>(
+        existing_fitness: &'a Option<&'a Fit>,
+        fitness_function: impl FnOnce() -> Result<Fit>,
+    ) -> Result<Fit> {
+        match existing_fitness {
+            Some(fitness) => Ok((*fitness).clone()),
+            None => fitness_function(),
+        }
+    }
+}
+
+impl FitnessBehavior for RecalculateFitness {
+    fn handle_existing_fitness<'a, Fit: Fitness>(
+        _existing_fitness: &'a Option<&'a Fit>,
+        fitness_function: impl FnOnce() -> Result<Fit>,
+    ) -> Result<Fit> {
+        fitness_function()
+    }
+}
+
+impl<F, P, Fit, B> FitnessFunction for SimpleFitnessFunction<F, P, Fit, B>
+where
+    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    P: Phenotype,
+    Fit: Fitness,
+    B: FitnessBehavior + Send + Sync,
+{
+    type Phenotype = P;
+    type Fitness = Fit;
+
+    fn evaluate(
+        &self,
+        phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)],
+    ) -> Result<Vec<Self::Fitness>> {
+        phenotypes_with_fitnesses
+            .iter()
+            .map(|(phenotype, existing_fitness)| {
+                B::handle_existing_fitness(
+                    existing_fitness, 
+                    || (self.fitness_function)(phenotype)
+                )
+            }).collect()
+    }
+}
+        
+
+// use crate::types::*;
+// use crate::error::Result;
+
+// pub struct SimpleFitnessFunction<F>(pub F);
+
+// pub trait PrimitiveFitness {
+//     type Phenotype<'a>: Phenotype<'a>;
+//     type Fitness: Fitness;
+
+//     fn evaluate_phenotype(&self, phenotype: &Self::Phenotype<'_>) -> Result<Self::Fitness>;
+// }
+
+// impl<F> FitnessFunction for SimpleFitnessFunction<F>
+//     where F: PrimitiveFitness + Send + Sync
+// {
+//     type Phenotype<'a> = F::Phenotype<'a>;
+//     type Fitness = F::Fitness;
+
+//     fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype<'_>, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
+//         let result = phenotypes_with_fitnesses
+//             .into_iter()
+//             .map(|(phenotype, previous_fitness)| {
+//                 match previous_fitness {
+//                     Some(ex) => {let a = Ok((*ex).clone()); a},
+//                     None => self.0.evaluate_phenotype(phenotype)
+//                 }
+//             })
+//             .collect::<Result<Vec<_>>>();
+//         result
+                
+//     }
+// }
