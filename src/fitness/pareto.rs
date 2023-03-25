@@ -12,12 +12,20 @@ pub struct ParetoFitness {
 
 impl Fitness for ParetoFitness {}
 
-#[derive(Default)]
 pub struct ParetoFitnessFunction<P> 
     where
         P: Phenotype,
 {
     objectives: Vec<ObjectiveFunction<P>>,
+}
+
+impl<P> Default for ParetoFitnessFunction<P>
+    where
+        P: Phenotype
+{
+    fn default() -> Self {
+        Self { objectives: Vec::default() }
+    }
 }
 
 impl<P> ParetoFitnessFunction<P>
