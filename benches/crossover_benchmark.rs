@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use genetic::crossover::UniquenessPreservativeCrossover;
-use genetic::types::{VectorEncoded, CrossoverOperator};
+use genetic::types::CrossoverOperator;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
@@ -30,8 +30,8 @@ fn crossover_benchmark(c: &mut Criterion) {
     let max_gene_value = 30;
 
     let genomes = (0..num_genomes)
-        .map(|i| unique_deterministic_genes(genome_size, max_gene_value, [i as u8 + 1; 32]).into())
-        .collect::<Vec<VectorEncoded<TestGene>>>();
+        .map(|i| unique_deterministic_genes(genome_size, max_gene_value, [i as u8 + 1; 32]))
+        .collect::<Vec<Vec<TestGene>>>();
 
     let mut crossover = UniquenessPreservativeCrossover {
         num_children,

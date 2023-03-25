@@ -10,6 +10,8 @@ pub mod individual;
 pub mod population;
 pub mod reinsert;
 pub mod select;
+pub mod fitnesses;
+pub mod genotypes;
 
 pub mod prelude {
     pub use super::error::*;
@@ -22,4 +24,6 @@ pub mod prelude {
     pub use super::population::*;
     pub use super::reinsert::*;
     pub use super::select::*;
+    pub use super::fitnesses::*;
+    pub use super::genotypes::*;
 }

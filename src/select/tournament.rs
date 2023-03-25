@@ -1,6 +1,5 @@
 use rand::*;
-use rand::seq::IteratorRandom;
-use crate::{types::*, individual};
+use crate::types::*;
 use crate::error::Result;
 use crate::population::*;
 use serde::Deserialize;
@@ -48,7 +47,7 @@ impl<R> TournamentSelectionBuilder<R> {
         self
     }
 
-    pub fn with_rng<RNG: Rng>(mut self, rng: RNG) -> TournamentSelectionBuilder<RNG> {
+    pub fn with_rng<RNG: Rng>(self, rng: RNG) -> TournamentSelectionBuilder<RNG> {
         TournamentSelectionBuilder { 
             tournament_size: self.tournament_size,
             num_children: self.num_children,
@@ -136,6 +135,8 @@ mod tests {
     use super::*;
     use rand::SeedableRng;
     use rand::rngs::StdRng;
+
+    impl Genotype for usize {}
 
     fn create_test_population() -> SortedPopulation<usize, usize> {
         let genomes: Vec<usize> = (0..1000).collect();

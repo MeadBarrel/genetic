@@ -29,7 +29,7 @@ impl<R> UniquenessPreservativeCrossoverBuilder<R> {
         self
     }
 
-    pub fn with_rng<RN: Rng>(mut self, rng: RN) -> UniquenessPreservativeCrossoverBuilder<RN> {
+    pub fn with_rng<RN: Rng>(self, rng: RN) -> UniquenessPreservativeCrossoverBuilder<RN> {
         UniquenessPreservativeCrossoverBuilder {
             num_children: self.num_children,
             rng
@@ -63,12 +63,12 @@ pub struct UniquenessPreservativeCrossover<R, G>
 impl<R, G> CrossoverOperator for UniquenessPreservativeCrossover<R, G> 
     where R: Rng, G: AsRef<usize> + Clone + Send + Sync
 {
-    type Genotype = VectorEncoded<G>;
+    type Genotype = Vec<G>;
 
     fn crossover(&mut self, genomes: &[&Self::Genotype]) -> Result<Vec<Self::Genotype>> {
         let genome_length = genomes[0].len();
-        let combined = genomes.into_iter()
-            .map(|x| x.into_iter().cloned().collect::<Vec<_>>())
+        let combined = genomes.iter()
+            .map(|x| x.to_vec())
             .collect::<Vec<_>>()
             .concat();
         let max_index: usize = combined.iter().map(|x| *x.as_ref()).max().unwrap();
@@ -142,9 +142,9 @@ mod tests {
             // Generate genomes with unique and random genes within each parent
             let genomes = (0..num_genomes)
                 .map(|_| {
-                    unique_random_genes(genome_size, max_gene_value).into()
+                    unique_random_genes(genome_size, max_gene_value)
                 })
-                .collect::<Vec<VectorEncoded<TestGene>>>();
+                .collect::<Vec<Vec<TestGene>>>();
 
             let genomes_refs: Vec<_> = genomes.iter().collect();
 

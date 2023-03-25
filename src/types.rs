@@ -1,19 +1,9 @@
-pub use ordered_float::NotNan;
-
 use crate::error::Result;
 use crate::population::*;
 
 pub trait Genotype: Clone + Send + Sync {}
 pub trait Phenotype: Clone + Send + Sync {}
 pub trait Fitness: Clone + Ord + Send + Sync {}
-
-impl Fitness for NotNan<f64> {}
-
-pub type VectorEncoded<Gene> = Vec<Gene>;
-
-impl<Gene> Genotype for VectorEncoded<Gene>
-    where Gene: Clone + Send + Sync 
-{}
 
 pub trait FitnessFunction: Send + Sync {
     type Phenotype: Phenotype;
@@ -24,9 +14,9 @@ pub trait FitnessFunction: Send + Sync {
 
 pub trait Incubator: Clone {
     type Genotype: Genotype;
-    type Phenotype<'a>: Phenotype + 'a where Self: 'a;
+    type Phenotype: Phenotype;
 
-    fn grow<'a: 'b, 'b>(&'a self, genome: &Self::Genotype) -> Result<Self::Phenotype<'b>>;
+    fn grow(&self, genome: &Self::Genotype) -> Result<Self::Phenotype>;
 }
 
 pub trait MutateOperator {

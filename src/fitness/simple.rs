@@ -110,37 +110,3 @@ where
             }).collect()
     }
 }
-        
-
-// use crate::types::*;
-// use crate::error::Result;
-
-// pub struct SimpleFitnessFunction<F>(pub F);
-
-// pub trait PrimitiveFitness {
-//     type Phenotype<'a>: Phenotype<'a>;
-//     type Fitness: Fitness;
-
-//     fn evaluate_phenotype(&self, phenotype: &Self::Phenotype<'_>) -> Result<Self::Fitness>;
-// }
-
-// impl<F> FitnessFunction for SimpleFitnessFunction<F>
-//     where F: PrimitiveFitness + Send + Sync
-// {
-//     type Phenotype<'a> = F::Phenotype<'a>;
-//     type Fitness = F::Fitness;
-
-//     fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype<'_>, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
-//         let result = phenotypes_with_fitnesses
-//             .into_iter()
-//             .map(|(phenotype, previous_fitness)| {
-//                 match previous_fitness {
-//                     Some(ex) => {let a = Ok((*ex).clone()); a},
-//                     None => self.0.evaluate_phenotype(phenotype)
-//                 }
-//             })
-//             .collect::<Result<Vec<_>>>();
-//         result
-                
-//     }
-// }

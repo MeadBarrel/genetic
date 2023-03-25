@@ -1,6 +1,8 @@
 use crate::types::*;
 use rayon::slice::ParallelSliceMut;
 
+pub type ObjectiveFunction<P> = Box<dyn Fn(&P)->f64 + Sync + Send>;
+
 #[derive(Clone)]
 pub struct ParetoFitness {
     rank: usize,
@@ -10,20 +12,17 @@ pub struct ParetoFitness {
 
 impl Fitness for ParetoFitness {}
 
+#[derive(Default)]
 pub struct ParetoFitnessFunction<P> 
     where
         P: Phenotype,
 {
-    objectives: Vec<Box<dyn Fn(&P)->f64 + Sync + Send>>,
+    objectives: Vec<ObjectiveFunction<P>>,
 }
 
 impl<P> ParetoFitnessFunction<P>
     where P: Phenotype
 {
-    pub fn new() -> Self { 
-        Self { objectives: Vec::default() } 
-    }
-    
     pub fn with_objective(mut self, objective: Box<dyn Fn(&P)->f64 + Sync + Send>) -> Self {
         self.objectives.push(objective);
         self
@@ -38,7 +37,7 @@ impl<P> FitnessFunction for ParetoFitnessFunction<P>
 
     fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> crate::prelude::Result<Vec<Self::Fitness>> {
         let objectives: Vec<Vec<f64>> = phenotypes_with_fitnesses
-                    .into_iter()
+                    .iter()
                     .map(|(phenotype, fitness)| {
                         let objectives = fitness.map(|x| x.objectives.clone());
                         objectives.unwrap_or_else(

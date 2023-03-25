@@ -5,7 +5,7 @@ use crate::error::*;
 pub struct ElitistReinserter;
 
 impl ReinsertOperator for ElitistReinserter {
-    fn reinsert<G, F>(&mut self, mut population: SortedPopulation<G, F>) -> Result<UnsortedPopulation<G, F>>
+    fn reinsert<G, F>(&mut self, population: SortedPopulation<G, F>) -> Result<UnsortedPopulation<G, F>>
             where 
                 G: Genotype,
                 F: Fitness 

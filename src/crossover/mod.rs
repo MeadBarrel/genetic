@@ -1,3 +1,3 @@
 pub mod unique_genes;
 
-pub use unique_genes::UniquenessPreservativeCrossover;
+pub use unique_genes::*;
