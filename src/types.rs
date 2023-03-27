@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use crate::error::Result;
 use crate::population::*;
 
@@ -12,7 +14,7 @@ pub trait FitnessFunction: Send + Sync {
     fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>>;
 }
 
-pub trait Incubator: Clone {
+pub trait Incubator {
     type Genotype: Genotype;
     type Phenotype: Phenotype;
 
@@ -45,4 +47,29 @@ pub trait ReinsertOperator {
             G: Genotype,
             F: Fitness
     ;
+}
+
+/// An Incubator that returns a Phenotype that is the same as Genotype
+/// The Genotype must also implement Phenotype trait
+pub struct IdentityIncubator<G> 
+{
+    _phantom: PhantomData<G>
+}
+
+impl<G> Default for IdentityIncubator<G>
+{
+    fn default() -> Self {
+        Self { _phantom: PhantomData }
+    }
+}
+
+impl<G> Incubator for IdentityIncubator<G> 
+    where G: Genotype + Phenotype + Clone
+{
+    type Genotype = G;
+    type Phenotype = G;
+
+    fn grow(&self, genome: &Self::Genotype) -> Result<Self::Phenotype> {
+        Ok(genome.clone())
+    }
 }
