@@ -30,6 +30,10 @@ impl Default for ParetoFitnessFunction<(), ()>
 
 impl ParetoFitnessFunction<(), ()>
 {
+    pub fn complex<P>(self) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> {
+        ParetoFitnessFunction { _phantom: PhantomData, objectives: Vec::default() }
+    }
+
     pub fn with_objective<P>(self, objective: Box<dyn Fn(&P)->f64>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
         where 
             P: Phenotype,
