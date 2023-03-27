@@ -160,80 +160,70 @@ impl<G, F> SortedPopulation<G, F>
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::population;
+#[cfg(test)]
+mod tests {
+    use crate::population;
 
-//     use super::*;
+    use super::*;
 
-//     impl Genotype for usize {}
-//     //impl Fitness for usize {}
-//     impl<'a> Phenotype for &'a str {}
+    impl Genotype for usize {}
+    //impl Fitness for usize {}
+    impl Phenotype for String {}
 
-//     pub struct UsizeFitnessFunction<'a>(PhantomData<&'a ()>);
+    pub struct UsizeFitnessFunction<'a>(PhantomData<&'a ()>);
 
-//     impl<'a> FitnessFunction for UsizeFitnessFunction<'a> {
-//         type Phenotype = &'a str;
-//         type Fitness = usize;
+    impl<'a> FitnessFunction for UsizeFitnessFunction<'a> {
+        type Phenotype = String;
+        type Fitness = usize;
 
-//         fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
-//             let result = phenotypes_with_fitnesses
-//                         .into_iter()
-//                         .map(|(phenotype, fitness)| fitness.cloned().unwrap_or_else(|| phenotype.len()))
-//                         .collect();
-//             Ok(result)            
-//         }
+        fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
+            let result = phenotypes_with_fitnesses
+                        .into_iter()
+                        .map(|(phenotype, fitness)| fitness.cloned().unwrap_or_else(|| phenotype.len()))
+                        .collect();
+            Ok(result)            
+        }
+    }
 
-//         // fn evaluate(&self, phenotypes_with_fitnesses: T) -> Result<Vec<Self::Fitness>>
-//         //         where
-//         //             T: Iterator<Item = (&'a Self::Phenotype<'a>, Option<&'a Self::Fitness>)> {
-//         //     let result = phenotypes_with_fitnesses
-//         //                 .map(|(phenotype, fitness)| fitness.cloned().unwrap_or_else(|| phenotype*2))
-//         //                 .collect();
-//         //     Ok(result)
-//         // }
-//     }
+    #[derive(Clone)]
+    pub struct UsizeIncubator(Vec<String>);
 
-//     #[derive(Clone)]
-//     pub struct UsizeIncubator(Vec<String>);
+    impl Incubator for UsizeIncubator {
+        type Genotype = usize;
+        type Phenotype = String;
 
-//     impl Incubator for UsizeIncubator {
-//         type Genotype = usize;
-//         type Phenotype<'a> = &'a str;
+        fn grow(&self, genome: &Self::Genotype) -> Result<Self::Phenotype> {
+            Ok(self.0[*genome].to_string())
+        }
+    }
 
-//         fn grow<'a: 'b, 'b>(&'a self, genome: &Self::Genotype) -> Result<Self::Phenotype<'b>> {
-//             Ok(&self.0[*genome])
-//         }
-//     }
+    #[test]
+    fn test_population_sort() {
+        let fitness_function = UsizeFitnessFunction(PhantomData);
+        let incubator = UsizeIncubator(vec![
+            "apples".into(),
+            "oranges".into(),
+            "wheat".into(),
+            "coconuts".into(),
+            "stuff".into(),
+            "grapes".into()
+        ]);
 
-//     #[test]
-//     fn test_population_sort() {
-//         let fitness_function = UsizeFitnessFunction(PhantomData);
-//         let incubator = UsizeIncubator(vec![
-//             "apples".into(),
-//             "oranges".into(),
-//             "wheat".into(),
-//             "coconuts".into(),
-//             "stuff".into(),
-//             "grapes".into()
-//         ]);
+        let genomes = vec![
+            5, 3, 2, 4, 1
+        ];
 
-//         let genomes = vec![
-//             5, 3, 2, 4, 1
-//         ];
+        let population = UnsortedPopulation::default();
+        let population = population.add_children(genomes);
+        let population = population.sort(&incubator, &fitness_function).unwrap();
 
-//         let population = UnsortedPopulation::new();
-//         let population = population.add_children(genomes);
-//         let population = population.sort(&incubator, &fitness_function).unwrap();
+        let individuals: Vec<usize> = population.individuals
+            .into_iter()
+            .map(|x| x.fitness.unwrap())
+            .collect();
 
-//         let individuals: Vec<usize> = population.individuals
-//             .into_iter()
-//             .map(|x| x.fitness.unwrap())
-//             .collect();
+        let expected: Vec<usize> = vec![8, 7, 6, 5, 5];
 
-//         let expected: Vec<usize> = vec![1231, 991, 918, 912, 71, 71, 22, 15, 9]
-//             .into_iter().map(|x| x*2).collect();
-
-//         assert_eq!(individuals, expected);
-//     }
-// }
+        assert_eq!(individuals, expected);
+    }
+}

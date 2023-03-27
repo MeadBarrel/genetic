@@ -136,8 +136,6 @@ mod tests {
     use rand::SeedableRng;
     use rand::rngs::StdRng;
 
-    impl Genotype for usize {}
-
     fn create_test_population() -> SortedPopulation<usize, usize> {
         let genomes: Vec<usize> = (0..1000).collect();
         let individuals: Vec<_> = genomes

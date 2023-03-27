@@ -33,9 +33,14 @@ impl<I, F, S, C, M, R> GeneticAlgorithm<I, F, S, C, M, R>
         for genome in offsprings.iter_mut() {
             self.mutate.mutate(genome)?;
         }
+
+        
         
         let population = population.add_children(offsprings);
+        dbg!(population.individuals.len());
         let population = population.sort(&self.incubator, &self.fitness_function)?;
+
+        
 
         let population = self.reinsert.reinsert(population)?;
         
