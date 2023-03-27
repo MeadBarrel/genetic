@@ -150,6 +150,16 @@ where
     }
 }
 
+impl<G, F> SortedPopulation<G, F> 
+    where
+        G: Genotype,
+        F: Fitness,
+{
+    pub fn best(&self) -> &Individual<G, F> {
+        &self.individuals[0]
+    }
+}
+
 // #[cfg(test)]
 // mod tests {
 //     use crate::population;
