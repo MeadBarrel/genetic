@@ -15,6 +15,20 @@ pub struct ParetoFitness {
 
 impl Fitness for ParetoFitness {}
 
+impl ParetoFitness {
+    pub fn rank(&self) -> usize {
+        self.rank
+    }
+
+    pub fn crowding_distance(&self) -> f64 {
+        self.crowding_distance
+    }
+
+    pub fn objectives(&self) -> &[f64] {
+        &self.objectives
+    }
+}
+
 pub struct ParetoFitnessFunction<P, F> 
 {
     _phantom: PhantomData<P>,
