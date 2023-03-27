@@ -14,7 +14,7 @@ pub mod fitnesses;
 pub mod genotypes;
 
 pub mod prelude {
-    pub use super::error::*;
+    //pub use super::error::*;
     pub use super::types::*;
     pub use super::fitness::*;
     pub use super::crossover::*;
