@@ -3,11 +3,11 @@ use std::marker::PhantomData;
 use crate::error::Result;
 use crate::population::*;
 
-pub trait Genotype: Clone + Send + Sync {}
-pub trait Phenotype: Clone + Send + Sync {}
-pub trait Fitness: Clone + Ord + Send + Sync {}
+pub trait Genotype: Clone {}
+pub trait Phenotype: Clone {}
+pub trait Fitness: Clone + Ord {}
 
-pub trait FitnessFunction: Send + Sync {
+pub trait FitnessFunction: {
     type Phenotype: Phenotype;
     type Fitness: Fitness;
 

@@ -1,8 +1,6 @@
 use std::ops::Index;
 use std::marker::PhantomData;
 
-use rayon::slice::ParallelSliceMut;
-
 use crate::types::*;
 use crate::individual::*;
 use crate::error::*;
@@ -123,7 +121,7 @@ impl<G, F> UnsortedPopulation<G, F>
             .zip(new_fitnesses.into_iter())
             .for_each(|(mut individual, fitness)| individual.fitness = Some(fitness));
 
-        self.individuals.par_sort_by(|individual1, individual2| {
+        self.individuals.sort_by(|individual1, individual2| {
             let a = individual1.fitness.as_ref().unwrap();
             let b = individual2.fitness.as_ref().unwrap();
             b.cmp(a)

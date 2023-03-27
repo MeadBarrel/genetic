@@ -4,7 +4,7 @@ use crate::types::*;
 use rayon::slice::ParallelSliceMut;
 use crate::error::*;
 
-pub type ObjectiveFunction<P> = Box<dyn Fn(&P)->f64 + Sync + Send>;
+pub type ObjectiveFunction<P> = Box<dyn Fn(&P)->f64>;
 
 #[derive(Clone)]
 pub struct ParetoFitness {
@@ -30,7 +30,7 @@ impl Default for ParetoFitnessFunction<(), ()>
 
 impl ParetoFitnessFunction<(), ()>
 {
-    pub fn with_objective<P>(self, objective: Box<dyn Fn(&P)->f64 + Sync + Send>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
+    pub fn with_objective<P>(self, objective: Box<dyn Fn(&P)->f64>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
         where 
             P: Phenotype,
     {
@@ -44,7 +44,7 @@ impl ParetoFitnessFunction<(), ()>
     pub fn with_objectives<P, F>(self, objective: F) -> ParetoFitnessFunction<P, F>
         where 
             P: Phenotype,
-            F: Fn(&P)->Vec<f64> + Sync + Send
+            F: Fn(&P)->Vec<f64>
     {
         ParetoFitnessFunction { _phantom: PhantomData, objectives: objective }
     }
@@ -72,7 +72,7 @@ impl<P, F> ParetoFitnessFunction<P, F>
 impl<P> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
     where P: Phenotype
 {
-    pub fn with_objective(mut self, objective: Box<dyn Fn(&P)->f64 + Sync + Send>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> {
+    pub fn with_objective(mut self, objective: Box<dyn Fn(&P)->f64>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> {
         self.objectives.push(objective);
         self
     }
@@ -103,7 +103,7 @@ impl<P> FitnessFunction for ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>>
 impl<P, F> FitnessFunction for ParetoFitnessFunction<P, F>
     where
         P: Phenotype,
-        F: Fn(&P)->Vec<f64> + Sync + Send
+        F: Fn(&P)->Vec<f64>
 {
     type Fitness = ParetoFitness;
     type Phenotype = P;

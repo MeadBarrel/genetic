@@ -4,7 +4,7 @@ use crate::error::*;
 #[derive(Clone)]
 pub struct SimpleFitnessFunction<F, P, Fit, B>
 where
-    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    F: Fn(&P) -> Result<Fit>,
     P: Phenotype,
     Fit: Fitness,
     B: FitnessBehavior,
@@ -15,7 +15,7 @@ where
 
 impl<F, P, Fit, B> SimpleFitnessFunction<F, P, Fit, B>
 where
-    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    F: Fn(&P) -> Result<Fit>,
     P: Phenotype,
     Fit: Fitness,
     B: FitnessBehavior,
@@ -35,7 +35,7 @@ pub struct SimpleFitness<F, P, Fit> {
 
 impl<F, P, Fit> SimpleFitness<F, P, Fit>
 where
-    F: Fn(&P) -> Result<Fit> + Send + Sync,
+    F: Fn(&P) -> Result<Fit> ,
     P: Phenotype,
     Fit: Fitness,
 {
