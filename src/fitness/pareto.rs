@@ -1,5 +1,8 @@
+use std::marker::PhantomData;
+
 use crate::types::*;
 use rayon::slice::ParallelSliceMut;
+use crate::error::*;
 
 pub type ObjectiveFunction<P> = Box<dyn Fn(&P)->f64 + Sync + Send>;
 
@@ -12,48 +15,44 @@ pub struct ParetoFitness {
 
 impl Fitness for ParetoFitness {}
 
-pub struct ParetoFitnessFunction<P> 
-    where
-        P: Phenotype,
+pub struct ParetoFitnessFunction<P, F> 
 {
-    objectives: Vec<ObjectiveFunction<P>>,
+    _phantom: PhantomData<P>,
+    objectives: F,
 }
 
-impl<P> Default for ParetoFitnessFunction<P>
-    where
-        P: Phenotype
+impl Default for ParetoFitnessFunction<(), ()>
 {
     fn default() -> Self {
-        Self { objectives: Vec::default() }
+        Self { objectives: (),  _phantom: PhantomData}
     }
 }
 
-impl<P> ParetoFitnessFunction<P>
-    where P: Phenotype
+impl ParetoFitnessFunction<(), ()>
 {
-    pub fn with_objective(mut self, objective: Box<dyn Fn(&P)->f64 + Sync + Send>) -> Self {
-        self.objectives.push(objective);
-        self
+    pub fn with_objective<P>(self, objective: Box<dyn Fn(&P)->f64 + Sync + Send>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
+        where 
+            P: Phenotype,
+    {
+        let objectives = vec![objective];
+        ParetoFitnessFunction {
+            objectives,
+            _phantom: PhantomData
+        }
+    }
+
+    pub fn with_objectives<P, F>(self, objective: F) -> ParetoFitnessFunction<P, F>
+        where 
+            P: Phenotype,
+            F: Fn(&P)->Vec<f64> + Sync + Send
+    {
+        ParetoFitnessFunction { _phantom: PhantomData, objectives: objective }
     }
 }
 
-impl<P> FitnessFunction for ParetoFitnessFunction<P> 
-    where P: Phenotype
+impl<P, F> ParetoFitnessFunction<P, F>
 {
-    type Phenotype = P;
-    type Fitness = ParetoFitness;
-
-    fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> crate::prelude::Result<Vec<Self::Fitness>> {
-        let objectives: Vec<Vec<f64>> = phenotypes_with_fitnesses
-                    .iter()
-                    .map(|(phenotype, fitness)| {
-                        let objectives = fitness.map(|x| x.objectives.clone());
-                        objectives.unwrap_or_else(
-                            || self.objectives.iter().map(|f| f(*phenotype)).collect()
-                        )
-                    })
-                    .collect();
-
+    pub fn evaluate_objectives(&self, objectives: Vec<Vec<f64>>) -> Result<Vec<ParetoFitness>> {
         let ranks = pareto_ranks(&objectives);
         let crowding_dists = crowding_distances(&objectives);
         let result = ranks.
@@ -66,34 +65,63 @@ impl<P> FitnessFunction for ParetoFitnessFunction<P>
             })
             .collect();
         Ok(result)        
+
+    }
+}
+
+impl<P> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
+    where P: Phenotype
+{
+    pub fn with_objective(mut self, objective: Box<dyn Fn(&P)->f64 + Sync + Send>) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> {
+        self.objectives.push(objective);
+        self
+    }
+}
+
+impl<P> FitnessFunction for ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> 
+    where 
+        P: Phenotype,
+{
+    type Phenotype = P;
+    type Fitness = ParetoFitness;
+
+    fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
+        let objectives: Vec<Vec<f64>> = phenotypes_with_fitnesses
+                    .iter()
+                    .map(|(phenotype, fitness)| {
+                        let objectives = fitness.map(|x| x.objectives.clone());
+                        objectives.unwrap_or_else(
+                            || self.objectives.iter().map(|f| f(*phenotype)).collect()
+                        )
+                    })
+                    .collect();
+        self.evaluate_objectives(objectives)
     }
 
-    // fn evaluate<'a, T>(&'a self, phenotypes_with_fitnesses: T) -> crate::error::Result<Vec<Self::Fitness>>
-    //         where
-    //             T: Iterator<Item = (&'a Self::Phenotype<'a>, Option<&'a Self::Fitness>)> {
-    //     let objectives: Vec<Vec<f64>> = phenotypes_with_fitnesses
-    //                 .map(|(phenotype, fitness)| {
-    //                     let objectives = fitness.map(|x| x.objectives.clone());
-    //                     objectives.unwrap_or_else(
-    //                         || self.objectives.iter().map(|f| f(phenotype)).collect()
-    //                     )
-    //                 })
-    //                 .collect();
-
-    //     let ranks = pareto_ranks(&objectives);
-    //     let crowding_dists = crowding_distances(&objectives);
-    //     let result = ranks.
-    //         into_iter()
-    //         .zip(
-    //             crowding_dists.into_iter().zip(objectives.into_iter())                
-    //         )
-    //         .map(|(rank, (crowding_distance, objectives))| ParetoFitness {
-    //             rank, crowding_distance, objectives
-    //         })
-    //         .collect();
-    //     Ok(result)
-    // }
 }
+
+impl<P, F> FitnessFunction for ParetoFitnessFunction<P, F>
+    where
+        P: Phenotype,
+        F: Fn(&P)->Vec<f64> + Sync + Send
+{
+    type Fitness = ParetoFitness;
+    type Phenotype = P;
+
+    fn evaluate(&self, phenotypes_with_fitnesses: &[(&Self::Phenotype, Option<&Self::Fitness>)]) -> Result<Vec<Self::Fitness>> {
+        let objectives = phenotypes_with_fitnesses
+            .iter()
+            .map(|(phenotype, fitness)| {
+                let objectives = fitness.map(|x| x.objectives.clone());
+                objectives.unwrap_or_else(
+                    || (self.objectives)(phenotype)
+                )
+            })
+            .collect();
+        self.evaluate_objectives(objectives)
+    }
+}
+
 
 impl PartialEq for ParetoFitness {
     fn eq(&self, other: &Self) -> bool {
@@ -186,6 +214,100 @@ mod tests {
     use super::*;
     use float_cmp::*;
 
+    impl Phenotype for usize {}
+
+    #[test]
+    fn test_pareto_fitness_objectives() {
+        let points = vec![
+            vec![0.7873616773923351, 0.8092306552000161],
+            vec![0.21173326011754878, 0.6339482992398732],
+            vec![0.01725675132713511, 0.9881718237619325],
+            vec![0.5330575947747812, 0.9857357852889478],
+            vec![0.5829186417619112, 0.5495024479309618],
+            vec![0.3521920654953825, 0.9142557605053708],
+            vec![0.3692810621902112, 0.08987228791660551],
+            vec![0.7478009420313325, 0.3523304812577952],
+            vec![0.5212182747402428, 0.41024277235906326],
+            vec![0.6000844913877189, 0.3594561767427774],
+            vec![0.21823414269097896, 0.8820946957442006],
+            vec![0.4550299655344954, 0.6162078310693472],
+            vec![0.17710113749892753, 0.006050443424864049],
+            vec![0.744808216764824, 0.11893987805784223],
+            vec![0.08517607238714664, 0.5755688995187869],
+            vec![0.0311175093718834, 0.14680352435542987],
+            vec![0.9406975842111823, 0.36328027015743847],
+            vec![0.49042703806432253, 0.21626967830636024],
+            vec![0.11508201721525246, 0.9030739711618478],
+            vec![0.7212068364234988, 0.1843117185801686],
+            vec![0.4720653136444348, 0.32004342948828035],
+            vec![0.7285032162065087, 0.38694809427377175],
+            vec![0.47187397860969094, 0.7384091109267817],
+            vec![0.17896648902209567, 0.779927706301946],
+            vec![0.2441719609991977, 0.8338028399022548],
+            vec![0.6138092170178797, 0.096676922062096],
+            vec![0.03926807017744294, 0.6405796332697564],
+            vec![0.3597415915757063, 0.7480627116447116],
+            vec![0.8332102156679112, 0.23308833651764094],
+            vec![0.7571160739197182, 0.9997153582193037],
+        ];
+
+        let expected_ranks = vec![
+            0,
+            4,
+            1,
+            1,
+            1,
+            2,
+            4, 
+            1,
+            2,
+            2,
+            3,
+            3,
+            5,
+            2,
+            5,
+            6,
+            0, 
+            3, 
+            3, 
+            2, 
+            3, 
+            1, 
+            2, 
+            4, 
+            3, 
+            3,
+            5,
+            2,
+            1,
+            0,
+        ];   
+
+        let objectives_func = |index: &usize| points[*index].clone();
+
+        let phenotypes_with_fitnesses_static: Vec<(usize, Option<ParetoFitness>)> = points
+            .iter()
+            .enumerate()
+            .map(|(i, _)| (i, None))
+            .collect();
+        
+        let phenotypes_with_fitnesses: Vec<_> = phenotypes_with_fitnesses_static
+            .iter()
+            .map(|(index, opt)| (index, opt.as_ref()))
+            .collect();
+
+        let fitness_function = ParetoFitnessFunction::default().with_objectives(objectives_func);
+        let fitnesses = fitness_function.evaluate(&phenotypes_with_fitnesses).unwrap();
+
+        let ranks: Vec<_> = fitnesses
+            .into_iter()
+            .map(|f| f.rank)
+            .collect();
+
+        assert_eq!(ranks, expected_ranks);
+    }
+
     #[test]
     fn test_crowding_distance() {
         let points = vec![
@@ -255,6 +377,8 @@ mod tests {
             0.2704837949183645,
             inf,
         ];
+
+
 
         let actual = crowding_distances(&points);
 
