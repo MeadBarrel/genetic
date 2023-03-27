@@ -30,7 +30,7 @@ impl Default for ParetoFitnessFunction<(), ()>
 
 impl ParetoFitnessFunction<(), ()>
 {
-    pub fn complex<P>(self) -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> {
+    pub fn complex<P>() -> ParetoFitnessFunction<P, Vec<ObjectiveFunction<P>>> {
         ParetoFitnessFunction { _phantom: PhantomData, objectives: Vec::default() }
     }
 
